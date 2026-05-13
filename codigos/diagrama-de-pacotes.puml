@@ -1,0 +1,81 @@
+@startuml diagrama_pacotes_olimpiadas
+
+title Sistema de Gestão Olímpica - Diagrama de Pacotes
+
+package "Sistema de Gestão Olímpica" {
+
+package "apresentacao" {
+  package "ui.competicoes" {
+  }
+  package "ui.atletas" {
+  }
+  package "ui.resultados" {
+  }
+  package "ui.relatorios" {
+  }
+}
+
+package "controle" {
+  package "controller.competicoes" {
+  }
+  package "controller.atletas" {
+  }
+  package "controller.resultados" {
+  }
+  package "controller.relatorios" {
+  }
+}
+
+package "modelo" {
+  package "entidades" {
+    class Competicao
+    class Atleta
+    class Local
+    class Resultado
+    class Pais
+    class Inscricao
+  }
+  package "enums" {
+    enum TipoMedalha
+    enum StatusCompeticao
+  }
+}
+
+package "servicos" {
+  package "validacao" {
+  }
+  package "alocacao" {
+  }
+  package "calculo" {
+  }
+}
+
+package "persistencia" {
+  package "dao.competicoes" {
+  }
+  package "dao.atletas" {
+  }
+  package "dao.resultados" {
+  }
+  package "conexao" {
+  }
+}
+
+package "util" {
+  package "relatorios" {
+  }
+  package "exportacao" {
+  }
+}
+
+}
+
+apresentacao ..> controle
+controle ..> modelo
+controle ..> servicos
+servicos ..> modelo
+persistencia ..> modelo
+controle ..> persistencia
+util ..> modelo
+
+@enduml

@@ -1,0 +1,87 @@
+@startuml diagrama_classes_olimpiadas
+
+title Sistema de Gestão Olímpica - Diagrama de Classes
+
+class Competicao {
+- id: Integer
+- nomeModalidade: String
+- data: Date
+- horario: Time
+- status: String
++ cadastrar()
++ consultarAtletasInscritos()
++ verificarDisponibilidade()
++ finalizarCompeticao()
+}
+
+class Atleta {
+- id: Integer
+- nome: String
+- dataNascimento: Date
+- documento: String
+- genero: String
++ inscreverCompeticao()
++ consultarInscricoes()
++ validarElegibilidade()
+}
+
+class Local {
+- id: Integer
+- nome: String
+- endereco: String
+- capacidade: Integer
+- tipo: String
++ verificarDisponibilidade()
++ alocarCompeticao()
++ consultarAgenda()
+}
+
+class Resultado {
+- id: Integer
+- posicao: Integer
+- tempo: String
+- pontuacao: Float
+- tipoMedalha: String
++ registrar()
++ validarResultado()
++ atualizarQuadro()
+}
+
+class Pais {
+- id: Integer
+- nome: String
+- sigla: String
+- totalOuro: Integer
+- totalPrata: Integer
+- totalBronze: Integer
++ calcularTotalMedalhas()
++ gerarRelatorioMedalhas()
++ atualizarRanking()
+}
+
+class Inscricao {
+- id: Integer
+- dataInscricao: Date
+- statusInscricao: String
+- numeroParticipacao: String
++ confirmar()
++ cancelar()
++ validar()
+}
+
+enum TipoMedalha {
+OURO
+PRATA
+BRONZE
+}
+
+Competicao "1" -- "1" Local : realizada em >
+Competicao "1" -- "0..*" Inscricao : possui >
+Atleta "1" -- "0..*" Inscricao : faz >
+Atleta "0..*" -- "1" Pais : representa >
+Competicao "1" -- "0..3" Resultado : gera >
+Resultado "1" -- "1" Atleta : conquistado por >
+Resultado "1" -- "1" TipoMedalha : classifica >
+Pais "1" -- "0..*" Resultado : acumula >
+
+@enduml

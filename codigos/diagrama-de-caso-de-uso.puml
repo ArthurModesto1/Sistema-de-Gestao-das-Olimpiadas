@@ -1,0 +1,63 @@
+@startuml Diagrama_Casos_Uso_Olimpiadas
+
+title Sistema de Gestão Olímpica - Diagrama de Casos de Uso
+
+left to right direction
+
+actor "Administrador\ndo Sistema" as Admin
+actor "Coordenador de\nCompetições" as Coord
+actor "Atleta" as Atleta
+actor "Representante\nde País" as Rep
+actor "Árbitro/Juiz" as Arbitro
+actor "Consultor de\nRelatórios" as Consultor
+
+rectangle "Sistema de Gestão Olímpica" {
+
+package "Gerenciamento de Competições" {
+usecase "Cadastrar Competição" as UC01
+usecase "Consultar Competições" as UC06
+usecase "Alocar Local" as UC03
+usecase "Verificar Conflitos\nde Agenda" as UC08
+}
+
+package "Gerenciamento de Atletas" {
+usecase "Inscrever Atleta" as UC02
+usecase "Gerenciar Atletas" as UC07
+usecase "Validar Elegibilidade" as UC09
+}
+
+package "Resultados e Relatórios" {
+usecase "Registrar Resultados" as UC04
+usecase "Gerar Relatório\nde Medalhas" as UC05
+usecase "Atualizar Quadro\nde Medalhas" as UC10
+}
+}
+
+Coord --> UC01
+Coord --> UC03
+Coord --> UC06
+Coord --> UC08
+
+Atleta --> UC02
+Atleta --> UC06
+
+Rep --> UC02
+Rep --> UC07
+Rep --> UC06
+
+Arbitro --> UC04
+
+Consultor --> UC05
+Consultor --> UC06
+
+Admin --> UC01
+Admin --> UC07
+Admin --> UC05
+
+UC01 ..> UC03 : <<include>>
+UC03 ..> UC08 : <<include>>
+UC02 ..> UC09 : <<include>>
+UC04 ..> UC10 : <<include>>
+UC05 ..> UC10 : <<include>>
+
+@enduml
