@@ -1,0 +1,113 @@
+@startuml diagrama-de-componentes
+
+skinparam componentBackgroundColor LightYellow
+skinparam componentBorderColor DarkOrange
+skinparam databaseBackgroundColor LightBlue
+skinparam interfaceBackgroundColor LightGreen
+skinparam arrowColor DarkSlateGray
+
+title Sistema de Gestão das Olimpíadas (SGO) - Diagrama de Componentes
+
+interface "IAutenticacao" as IAuth
+interface "ICompeticao" as IComp
+interface "IInscricao" as IInsc
+interface "IAlocacao" as IAloc
+interface "IResultado" as IRes
+interface "IRelatorio" as IRel
+
+component "Interface de Usuário\n(Frontend Web)" as UI {
+  component "Tela de Competições" as TelaComp
+  component "Tela de Atletas" as TelaAtleta
+  component "Tela de Locais" as TelaLocal
+  component "Tela de Resultados" as TelaResult
+  component "Tela de Relatórios" as TelaRel
+}
+
+component "API Gateway" as Gateway {
+  component "Autenticação\ne Autorização" as Auth
+  component "Roteador\nde Requisições" as Router
+}
+
+component "Módulo de Competições" as ModComp {
+  component "Serviço de Competições" as SvcComp
+  component "Repositório de Competições" as RepoComp
+}
+
+component "Módulo de Inscrições" as ModInsc {
+  component "Serviço de Inscrições" as SvcInsc
+  component "Validador de Inscrição" as ValInsc
+  component "Repositório de Inscrições" as RepoInsc
+}
+
+component "Módulo de Alocação" as ModAloc {
+  component "Serviço de Alocação" as SvcAloc
+  component "Verificador de Conflitos" as VeriConfl
+  component "Repositório de Locais" as RepoLocal
+}
+
+component "Módulo de Resultados" as ModRes {
+  component "Serviço de Resultados" as SvcRes
+  component "Calculador de Medalhas" as CalcMed
+  component "Repositório de Resultados" as RepoRes
+}
+
+component "Módulo de Relatórios" as ModRel {
+  component "Gerador de Relatórios" as GerRel
+  component "Exportador (PDF/Excel)" as Export
+  component "Serviço de Ranking" as SvcRank
+}
+
+database "Banco de Dados\nRelacional" as DB {
+  component "Tabela Competições" as TbComp
+  component "Tabela Atletas" as TbAtleta
+  component "Tabela Locais" as TbLocal
+  component "Tabela Resultados" as TbResult
+  component "Tabela Medalhas" as TbMed
+  component "Tabela Inscrições" as TbInsc
+}
+
+component "Serviço de\nNotificação" as Notif
+
+' Conexões UI -> Gateway
+UI --> Gateway : HTTPS/REST
+
+' Gateway
+Auth -( IAuth
+Gateway --> Router
+Router --> ModComp : ICompeticao
+Router --> ModInsc : IInscricao
+Router --> ModAloc : IAlocacao
+Router --> ModRes : IResultado
+Router --> ModRel : IRelatorio
+
+' Módulo de Competições
+ModComp --> DB : SQL
+SvcComp --> RepoComp
+
+' Módulo de Inscrições
+ModInsc --> ModComp : consulta competição
+SvcInsc --> ValInsc
+SvcInsc --> RepoInsc
+ModInsc --> DB : SQL
+ModInsc --> Notif : notifica atleta
+
+' Módulo de Alocação
+ModAloc --> ModComp : associa competição
+SvcAloc --> VeriConfl
+SvcAloc --> RepoLocal
+ModAloc --> DB : SQL
+
+' Módulo de Resultados
+ModRes --> ModInsc : consulta inscrições
+SvcRes --> CalcMed
+SvcRes --> RepoRes
+ModRes --> DB : SQL
+ModRes --> Notif : notifica resultado
+
+' Módulo de Relatórios
+ModRel --> ModRes : consulta resultados
+GerRel --> SvcRank
+GerRel --> Export
+ModRel --> DB : SQL
+
+@enduml

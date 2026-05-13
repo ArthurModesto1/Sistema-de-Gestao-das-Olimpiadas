@@ -1,0 +1,103 @@
+@startuml diagrama-de-implantacao
+
+skinparam nodeBackgroundColor LightYellow
+skinparam nodeBorderColor DarkOrange
+skinparam databaseBackgroundColor LightBlue
+skinparam componentBackgroundColor LightGreen
+skinparam arrowColor DarkSlateGray
+
+title Sistema de Gestão das Olimpíadas (SGO) - Diagrama de Implantação
+
+node "Dispositivos dos Usuários" as Clientes {
+  node "Navegador Web\n(Chrome / Firefox / Edge)" as Browser {
+    component "Aplicação Frontend\n(React / Vue.js)" as Frontend
+  }
+  node "Dispositivo Móvel\n(iOS / Android)" as Mobile {
+    component "App Mobile\n(React Native)" as AppMobile
+  }
+}
+
+node "Zona DMZ\n(Rede Desmilitarizada)" as DMZ {
+  node "Servidor de\nBalanceamento de Carga\n(NGINX / AWS ALB)" as LoadBalancer {
+    component "Load Balancer\nConfig" as LBConfig
+  }
+  node "Servidor CDN\n(CloudFront / CloudFlare)" as CDN {
+    component "Assets Estáticos\n(HTML/CSS/JS/Imagens)" as Assets
+  }
+}
+
+node "Rede Interna\n(Backend)" as BackendZone {
+  node "Servidor de\nAplicação 1\n(App Server - Linux)" as AppServer1 {
+    component "API SGO\n(Spring Boot / Node.js)" as API1
+    component "Módulo Competições" as MC1
+    component "Módulo Inscrições" as MI1
+  }
+  node "Servidor de\nAplicação 2\n(App Server - Linux)" as AppServer2 {
+    component "API SGO\n(Réplica)" as API2
+    component "Módulo Alocação" as MA2
+    component "Módulo Resultados" as MR2
+    component "Módulo Relatórios" as MRel2
+  }
+  node "Servidor de\nAutenticação\n(Auth Server)" as AuthServer {
+    component "Serviço JWT\n/ OAuth 2.0" as AuthService
+    component "Gerenciador\nde Sessões" as SessionMgr
+  }
+  node "Servidor de\nNotificações\n(Message Broker)" as MsgBroker {
+    component "RabbitMQ /\nApache Kafka" as Queue
+    component "Serviço de\nE-mail / Push" as NotifService
+  }
+}
+
+node "Camada de Dados\n(Data Layer)" as DataLayer {
+  node "Servidor de Banco\nde Dados Primário\n(PostgreSQL Master)" as DBMaster {
+    database "BD SGO\n(Principal)" as BDPrincipal
+  }
+  node "Servidor de Banco\nde Dados Réplica\n(PostgreSQL Replica)" as DBReplica {
+    database "BD SGO\n(Leitura)" as BDReplica
+  }
+  node "Servidor de\nCache\n(Redis)" as CacheServer {
+    database "Cache\n(Sessões / Consultas)" as Cache
+  }
+  node "Servidor de\nArmazenamento\n(Object Storage)" as Storage {
+    database "Arquivos /\nRelatórios / Imagens" as Files
+  }
+}
+
+node "Infraestrutura de\nMonitoramento" as Monitoring {
+  node "Servidor de\nLogs e Métricas" as LogServer {
+    component "ELK Stack /\nGrafana + Prometheus" as LogStack
+  }
+}
+
+' Conexões
+Browser --> CDN : HTTPS
+Mobile --> LoadBalancer : HTTPS
+Browser --> LoadBalancer : HTTPS
+CDN --> LoadBalancer : HTTPS
+
+LoadBalancer --> AppServer1 : HTTP (interno)
+LoadBalancer --> AppServer2 : HTTP (interno)
+
+AppServer1 --> AuthServer : HTTPS
+AppServer2 --> AuthServer : HTTPS
+
+API1 --> BDPrincipal : JDBC / SQL
+API2 --> BDReplica : JDBC / SQL (leitura)
+API1 --> Cache : Redis Protocol
+API2 --> Cache : Redis Protocol
+
+BDPrincipal --> BDReplica : Replicação\nAssíncrona
+
+AppServer1 --> Queue : AMQP
+AppServer2 --> Queue : AMQP
+Queue --> NotifService : Dispara
+
+API2 --> Files : HTTP / S3 API
+MRel2 --> Files : Salva Relatórios
+
+AppServer1 --> LogStack : Logs / Métricas
+AppServer2 --> LogStack : Logs / Métricas
+DBMaster --> LogStack : Logs BD
+AuthServer --> LogStack : Logs Auth
+
+@enduml
